@@ -504,12 +504,11 @@ class WT_G3x5_PFDMainPage extends NavSystemPage {
     }
 
     _createElements() {
-        return [
+        var elements = [
             this._autopilotDisplay = this._createAutopilotDisplay(),
             this._attitude = new AS3000_PFD_Attitude("PFD", this._instrument),
             this._airspeed = this._createAirspeedIndicator(),
             this._altimeter = this._createAltimeter(),
-            this._annunciations = new PFD_Annunciations(),
             this._compass = new WT_G3x5_PFDCompass(),
             this._aoaIndicator = this._createAoAIndicator(),
             this._minimums = this._createMinimums(),
@@ -520,6 +519,14 @@ class WT_G3x5_PFDMainPage extends NavSystemPage {
             this._radarAltimeter = this._createRadarAltimeter(),
             new PFD_MarkerBeacon()
         ];
+
+        // The Longitude does not have annunciations on the MFD, it needs to have them on the PFD instead
+        if (WT_PlayerAirplane.getAircraftType() == WT_PlayerAirplane.Type.CITATION_LONGITUDE)
+        {
+            elements.push(this._annunciations = new Cabin_Annunciations());
+        }
+
+        return elements;
     }
 
     /**
@@ -679,12 +686,14 @@ class AS3000_PFD_ActiveCom extends NavSystemElement {
     init(root) {
         this.activeCom = this.gps.getChildById("ActiveCom");
         this.activeComFreq = this.gps.getChildById("ActiveComFreq");
-        this.activeComName = this.gps.getChildById("ActiveComName");
+        this.standbyComFreq = this.gps.getChildById("StandbyComFreq");
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        diffAndSetHTML(this.activeComFreq, this.gps.frequencyFormat(SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz"), SimVar.GetSimVarValue("COM SPACING MODE:1", "Enum") == 0 ? 2 : 3));
+        let spacing = SimVar.GetSimVarValue("COM SPACING MODE:1", "Enum") == 0 ? 2 : 3;
+        diffAndSetHTML(this.activeComFreq, this.gps.frequencyFormat(SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz"), spacing));
+        diffAndSetHTML(this.standbyComFreq, this.gps.frequencyFormat(SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz"), spacing));
     }
     onExit() {
     }

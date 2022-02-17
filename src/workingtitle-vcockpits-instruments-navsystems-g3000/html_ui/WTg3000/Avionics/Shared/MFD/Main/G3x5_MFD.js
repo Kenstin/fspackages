@@ -88,6 +88,16 @@ class WT_G3x5_MFD extends NavSystem {
             ]),
         ];
     }
+    
+    parseXMLConfig() {
+        super.parseXMLConfig();
+        if (this.instrumentXmlConfig) {
+            let displayCom = this.instrumentXmlConfig.getElementsByTagName("DisplayCom");
+            if (displayCom.length > 0) {
+                diffAndSetAttribute(this.getChildById("CenterDisplay"), "displayCom", displayCom[0].textContent.toLowerCase());
+            }
+        }
+    }
 
     disconnectedCallback() {
     }
